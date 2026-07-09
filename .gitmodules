@@ -1,0 +1,9 @@
+[submodule "fractal-code-void"]
+	path = fractal-code-void
+	url = https://github.com/haltandcatchwater/fractal-code-void.git
+[submodule "openshell"]
+	path = openshell
+	url = https://github.com/haltandcatchwater/OpenShell.git
+[submodule "bridge"]
+	path = bridge
+	url = https://github.com/haltandcatchwater/fractal-openshell-bridge.git
