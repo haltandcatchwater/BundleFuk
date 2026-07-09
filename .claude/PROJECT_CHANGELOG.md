@@ -12,3 +12,7 @@ Do not edit manually — it will be overwritten.
 **2026-07-09 10:59** | `feat: initial BundleFuk — one install for Fractal + OpenShell`
 Files: 
 
+---
+**2026-07-09 11:02** | `feat: add Fractal, OpenShell, and bridge as git submodules`
+Files: .claude/PROJECT_CHANGELOG.md,.gitmodules,Makefile,README.md,bridge,fractal-code-void,openshell
+

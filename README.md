@@ -1,115 +1,110 @@
 # BundleFuk
 
-**One clone. One install. Everything.**
+Monorepo for the full Fractal + OpenShell source tree. One clone, everything on disk.
 
 ```
 git clone --recurse-submodules https://github.com/haltandcatchwater/BundleFuk.git
 cd BundleFuk
-npm install
+make all
 ```
 
-## What's inside
+## What's on disk
 
 ```
 BundleFuk/
-├── fractal-code-void/        ← git submodule — Fractal Code (8 npm packages)
-│   ├── channels/             ← 45+ I/O adapters (Anthropic, Stripe, GitHub...)
-│   ├── parser/               ← .fc file parser
-│   ├── sdk/                  ← base cell types + Universal Contract
-│   ├── runtime/              ← Javy Wasm void sandbox
-│   ├── validator/            ← constitutional checks (10+ gates)
-│   ├── fractalclaw/          ← orchestrator / CLI
-│   ├── mcp-server/           ← MCP governance server
-│   └── runner/               ← user-facing CLI + dashboard
+├── fractal-code-void/       ← git submodule — Fractal Code
+│   ├── channels/            ← 45+ typed I/O adapters
+│   ├── parser/              ← .fc file parser
+│   ├── sdk/                 ← base cell types
+│   ├── runtime/             ← Javy Wasm void
+│   ├── validator/           ← constitutional checks
+│   ├── fractalclaw/         ← orchestrator
+│   ├── mcp-server/          ← MCP governance
+│   ├── runner/              ← CLI + dashboard
+│   └── pipelines/           ← example scaffolds
 │
-├── openshell/                ← git submodule — OpenShell fork (Rust)
-│   ├── crates/openshell-fractal/  ← NEW: cell runner, constitution, channel mapper
-│   ├── crates/openshell-cli/      ← MODIFIED: `openshell fractal` subcommand
-│   ├── crates/openshell-sandbox/  ← kernel-enforced container isolation
-│   ├── crates/openshell-policy/   ← YAML policy engine
-│   ├── crates/openshell-prover/   ← formal verification (Z3)
-│   └── ... (15 more crates)
+├── openshell/               ← git submodule — OpenShell fork
+│   └── crates/
+│       ├── openshell-fractal/   ← NEW: cell runner, constitution, channel mapper
+│       ├── openshell-cli/       ← MODIFIED: `openshell fractal` subcommand
+│       ├── openshell-sandbox/   ← kernel container isolation
+│       ├── openshell-policy/    ← YAML policy engine
+│       ├── openshell-prover/    ← Z3 formal verification
+│       └── ... (15 more crates)
 │
-├── bridge/                   ← git submodule — Fractal→OpenShell compiler
-│   ├── src/compiler/         ← channel→policy YAML compiler
-│   ├── src/prover/           ← prover gate wrapper
-│   └── docker/               ← BYOC sandbox Dockerfile
-│
-├── bin/bundlefuk.js          ← CLI: `bundlefuk doctor`
-├── install.js                ← postinstall: downloads prebuilt openshell binary
-├── package.json              ← meta-package: depends on @fractalcode/runner
-└── Makefile                  ← one-command build everything
+└── bridge/                  ← git submodule — Fractal→OpenShell compiler
+    └── src/
+        ├── compiler/        ← channel→policy YAML compiler
+        └── prover/          ← prover gate wrapper
 ```
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    BundleFuk                         │
-│                                                     │
-│  ┌─────────────────┐  ┌───────────────────────────┐ │
-│  │  Fractal Code    │  │  OpenShell (fork)         │ │
-│  │  (TypeScript)    │  │  (Rust)                   │ │
-│  │                 │  │                           │ │
-│  │  • .fc parser   │  │  • openshell-fractal crate│ │
-│  │  • SDK + types  │  │  • sandbox isolation      │ │
-│  │  • 45+ channels │  │  • policy engine          │ │
-│  │  • Wasm runtime │  │  • prover (Z3)            │ │
-│  │  • validator    │  │  • privacy router         │ │
-│  │  • MCP server   │  │                           │ │
-│  │  • CLI + dash   │  │  `openshell fractal` CLI  │ │
-│  └────────┬────────┘  └───────────┬───────────────┘ │
-│           │                       │                  │
-│           └───────────┬───────────┘                  │
-│                       │                              │
-│              ┌────────┴────────┐                     │
-│              │     Bridge      │                     │
-│              │  (TypeScript)   │                     │
-│              │                 │                     │
-│              │  channels →     │                     │
-│              │  policy.yaml    │                     │
-│              └─────────────────┘                     │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│                 BundleFuk                     │
+│                                              │
+│  ┌────────────────┐  ┌────────────────────┐  │
+│  │  fractal-code- │  │     openshell      │  │
+│  │  void (TS)     │  │     (Rust)         │  │
+│  │                │  │                    │  │
+│  │  Logic layer:  │  │  Sandbox layer:    │  │
+│  │  • parsing     │  │  • kernel enforce  │  │
+│  │  • validation  │  │  • policy engine   │  │
+│  │  • channels    │  │  • prover (Z3)     │  │
+│  │  • Wasm void   │  │  • privacy router  │  │
+│  │  • MCP server  │  │                    │  │
+│  │  • dashboard   │  │  openshell fractal │  │
+│  └───────┬────────┘  └─────────┬──────────┘  │
+│          │                     │              │
+│          └──────────┬──────────┘              │
+│                     │                         │
+│            ┌────────┴────────┐                │
+│            │     bridge      │                │
+│            │    (TS)         │                │
+│            │                 │                │
+│            │  .fc channels → │                │
+│            │  policy.yaml    │                │
+│            └─────────────────┘                │
+└──────────────────────────────────────────────┘
 ```
 
-## Quick start
+## Building
 
 ```bash
-# Clone with everything
-git clone --recurse-submodules https://github.com/haltandcatchwater/BundleFuk.git
-cd BundleFuk
-
-# Install Fractal (TypeScript)
-cd fractal-code-void && npm install && cd ..
-
-# Build OpenShell (Rust — needs Rust toolchain)
-cd openshell && cargo build --release --bin openshell && cd ..
-
-# Build the bridge
-cd bridge && npm install && npm run build && cd ..
-
-# Verify
-node bin/bundlefuk.js doctor
+make all        # submodules + install + build
+make test       # run all tests
+make update     # pull latest submodule commits
 ```
 
-## What you can do
+Or per-component:
 
 ```bash
-# Work on Fractal source
+make fractal    # build Fractal (TypeScript)
+make openshell  # build OpenShell (Rust)
+make bridge     # build bridge (TypeScript)
+```
+
+## Working on source
+
+Each directory is its own git repo. Work inside it like normal:
+
+```bash
 cd fractal-code-void
-# ... edit channels, parser, runtime, etc.
+# ... make changes ...
+git commit -m "feat: ..."
+git push origin main
 
-# Work on OpenShell + Fractal crate
-cd openshell
-# ... edit crates/openshell-fractal/
+cd ../openshell
+# ... make changes to crates/openshell-fractal/ ...
+git commit -m "feat(fractal): ..."
+git push origin main
 
-# Work on the bridge
-cd bridge
-# ... edit src/compiler/
-
-# Run the whole thing
-fractal-runner serve              # Fractal API + dashboard
-openshell fractal validate ./cell.fc  # Constitutional check
+# Back in BundleFuk, pin the new submodule commits:
+cd ..
+git add fractal-code-void openshell
+git commit -m "chore: bump submodules"
+git push origin main
 ```
 
 ## Submodule remotes
@@ -120,10 +115,10 @@ openshell fractal validate ./cell.fc  # Constitutional check
 | `openshell/` | `haltandcatchwater/OpenShell` (fork of NVIDIA/OpenShell) |
 | `bridge/` | `haltandcatchwater/fractal-openshell-bridge` |
 
-## License
+## Licenses
 
-Each submodule carries its own license:
-- **Fractal Code**: GPLv3 + commercial dual-license
-- **OpenShell fork**: Apache-2.0
-- **Bridge**: Apache-2.0
-- **BundleFuk installer**: Apache-2.0
+| Component | License |
+|---|---|
+| Fractal Code | GPLv3 + commercial dual |
+| OpenShell | Apache-2.0 |
+| Bridge | Apache-2.0 |

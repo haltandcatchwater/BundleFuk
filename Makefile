@@ -1,6 +1,6 @@
-.PHONY: all install build clean doctor submodules
+.PHONY: all install build clean submodules fractal openshell bridge doctor
 
-# ── BundleFuk — one command to build everything ────────────────────────────
+# ── BundleFuk — monorepo for Fractal + OpenShell + bridge source ───────────
 
 all: submodules install build
 
@@ -8,33 +8,39 @@ all: submodules install build
 submodules:
 	git submodule update --init --recursive
 
-# Install all npm dependencies (Fractal + bridge)
+# Install Fractal + bridge npm deps
 install:
 	cd fractal-code-void && npm install
 	cd bridge && npm install && npm run build
 
-# Build OpenShell with Fractal crate (needs Rust toolchain)
+# Build OpenShell Rust binary
 build:
 	cd openshell && cargo build --release --bin openshell
 
-# Full clean build
+# Build just Fractal
+fractal:
+	cd fractal-code-void && npm run build
+
+# Build just OpenShell
+openshell:
+	cd openshell && cargo build --release --bin openshell
+
+# Build just the bridge
+bridge:
+	cd bridge && npm install && npm run build
+
+# Clean
 clean:
 	cd openshell && cargo clean
-	cd fractal-code-void && rm -rf node_modules dist
+	cd fractal-code-void && rm -rf node_modules packages/*/dist
 	cd bridge && rm -rf node_modules dist
 
-# Doctor check
-doctor:
-	node bin/bundlefuk.js doctor
+# Run tests for everything
+test:
+	cd fractal-code-void && npm test
+	cd bridge && npm test
+	cd openshell && cargo test -p openshell-fractal
 
-# Run Fractal
-serve:
-	cd fractal-code-void && npx fractal-runner serve
-
-# Run OpenShell Fractal CLI
-fractal:
-	cd openshell && cargo run --release --bin openshell -- fractal --help
-
-# Update all submodules to latest
+# Update all submodules to latest remote
 update:
 	git submodule update --remote --recursive
