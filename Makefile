@@ -8,9 +8,9 @@ all: submodules install build
 submodules:
 	git submodule update --init --recursive
 
-# Install Fractal + bridge npm deps (uses npm workspaces)
+# Install Fractal + bridge npm deps (per-package, handles file: deps)
 install:
-	cd fractal-code-void && npm install
+	cd fractal-code-void && for pkg in channels parser sdk runtime validator fractalclaw mcp-server runner; do (cd $$pkg && npm install); done
 	cd bridge && npm install && npm run build
 
 # Build everything that can be built locally
@@ -22,9 +22,9 @@ build: fractal bridge
 		echo "      Install Rust: https://rustup.rs"; \
 	fi
 
-# Build just Fractal (TypeScript, 8 packages via workspaces)
+# Build just Fractal (TypeScript, 8 packages in dependency order)
 fractal:
-	cd fractal-code-void && npm run build --workspaces --if-present
+	cd fractal-code-void && for pkg in channels parser sdk runtime validator fractalclaw mcp-server runner; do (cd $$pkg && npm run build 2>/dev/null); done
 
 # Build just OpenShell (Rust — requires cargo)
 openshell:
@@ -36,13 +36,13 @@ bridge:
 
 # Clean
 clean:
-	cd fractal-code-void && rm -rf node_modules && for d in channels parser sdk runtime validator fractalclaw mcp-server runner; do rm -rf $$d/dist $$d/node_modules; done
+	cd fractal-code-void && for d in channels parser sdk runtime validator fractalclaw mcp-server runner; do rm -rf $$d/dist $$d/node_modules; done
 	cd bridge && rm -rf node_modules dist
 	@if command -v cargo >/dev/null 2>&1; then cd openshell && cargo clean; fi
 
 # Run tests for everything
 test:
-	cd fractal-code-void && npm test --workspaces --if-present 2>/dev/null || echo "Some Fractal tests may require Javy on PATH"
+	cd fractal-code-void && for pkg in channels parser sdk runtime validator fractalclaw mcp-server; do (cd $$pkg && npx vitest run 2>/dev/null); done
 	cd bridge && npm test
 	@if command -v cargo >/dev/null 2>&1; then cd openshell && cargo test -p openshell-fractal; else echo "Skipping OpenShell tests (no cargo)"; fi
 
